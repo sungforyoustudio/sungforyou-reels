@@ -31,7 +31,6 @@ body="""
 </div>
 <div id="lyr"></div>
 <div id="tag"><span class="pill" id="tagp">Send this to your mom &#129402;</span></div>
-<div id="foot">Made with the help of AI, reviewed by a real person.</div>
 """
 script="""
 <script src="cfg.js"></script>
