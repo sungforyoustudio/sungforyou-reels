@@ -1,0 +1,104 @@
+<!doctype html><meta charset="utf-8">
+<style>
+@font-face{font-family:YT;src:url(fonts/yt.woff2)}
+@font-face{font-family:M;src:url(fonts/m600.woff2);font-weight:600}
+@font-face{font-family:M;src:url(fonts/m800.woff2);font-weight:800}
+@font-face{font-family:M;src:url(fonts/m900.woff2);font-weight:900}
+html,body{margin:0;background:#0B0820}canvas{display:block}
+.pre{position:absolute;left:-999px;font-family:M;font-weight:900}.pre2{position:absolute;left:-999px;font-family:YT}
+</style>
+<span class="pre">a</span><span class="pre" style="font-weight:800">a</span><span class="pre" style="font-weight:600">a</span><span class="pre2">a</span>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script src="cfg.js"></script>
+<script>
+const W=1080,H=1920,c=document.getElementById('c'),x=c.getContext('2d');
+const PINK='#FF4FA3',CY='#33E6FF',GOLD='#FFD23F',WH='#FFFFFF',DIM='#8B84B5';
+const IM={};['mito','s1','s2','s3','s4','s5','s6','s7','s8','wheel','etc','cell'].forEach(k=>{const i=new Image();i.src=k+'.png';IM[k]=i});
+// nodes clockwise from top
+const N=[['OAA','4C','Oxaloacetate'],['CIT','6C','Citrate'],['ISO','6C','Isocitrate'],['α-KG','5C','α-Ketoglutarate'],['S-CoA','4C','Succinyl-CoA'],['SUC','4C','Succinate'],['FUM','4C','Fumarate'],['MAL','4C','Malate']];
+const CX=540,CY0=880,R=330,NR=56;
+const ang=i=>-Math.PI/2+i*Math.PI/4;
+const S=CFG.scenes,L=CFG.lines,EV=CFG.events;
+const cl=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
+const ease=p=>p<0?0:p>1?1:p*p*(3-2*p);
+function glow(col,b){x.shadowColor=col;x.shadowBlur=b}
+function txt(s,px,py,size,wt,col,al='center',g){x.font=`${wt} ${size}px M`;x.textAlign=al;x.textBaseline='middle';x.fillStyle=col;if(g){glow(g,22)}x.fillText(s,px,py);x.shadowBlur=0}
+function fit(s,px,py,size,wt,col,maxw,g){x.font=`${wt} ${size}px M`;let w=x.measureText(s).width;if(w>maxw)size=Math.floor(size*maxw/w);txt(s,px,py,size,wt,col,'center',g)}
+function wrap(s,maxw,size,wt){x.font=`${wt} ${size}px M`;const ws=s.split(' ');let ls=[],cur='';for(const w of ws){const t=cur?cur+' '+w:w;if(x.measureText(t).width>maxw&&cur){ls.push(cur);cur=w}else cur=t}ls.push(cur);return ls}
+function rr(px,py,w,h,r){x.beginPath();x.roundRect(px,py,w,h,r)}
+function sceneAt(t){let k=0;for(let i=0;i<S.length;i++)if(t>=S[i].t)k=i;return k}
+function drawImg(img,t,a){ // circular center image
+  if(!img.complete||!img.naturalWidth)return;const r=238;x.save();x.globalAlpha=a;x.beginPath();x.arc(CX,CY0,r,0,7);x.clip();
+  const z=1.08+0.05*Math.sin(t*0.5),d=2*r*z;x.drawImage(img,CX-d/2+8*Math.sin(t*0.3),CY0-d/2,d,d);x.restore();
+}
+function draw(t){
+  const g=x.createRadialGradient(540,800,0,540,800,1300);g.addColorStop(0,'#2A1F5E');g.addColorStop(.5,'#15103A');g.addColorStop(1,'#0B0820');
+  x.fillStyle=g;x.fillRect(0,0,W,H);
+  const k=sceneAt(t),sc=S[k],st=sc.t,en=(S[k+1]||{t:CFG.T}).t,p=cl((t-st)/(en-st));
+  // title
+  x.font='86px YT';x.textAlign='center';x.textBaseline='middle';x.fillStyle='#FFE3F1';glow(PINK,26);x.fillText('The Krebs Cycle',540,150);x.shadowBlur=0;
+  // panel
+  const pa=ease((t-st)/0.35);x.save();x.globalAlpha=pa;x.translate(0,(1-pa)*18);
+  rr(70,222,940,206,34);x.fillStyle='rgba(11,8,32,.72)';x.fill();x.lineWidth=3;x.strokeStyle=sc.step?CY:PINK;glow(sc.step?CY:PINK,18);x.stroke();x.shadowBlur=0;
+  txt(sc.tag,540,262,34,800,sc.step?CY:PINK);
+  fit(sc.head,540,322,58,900,WH,880);
+  fit(sc.sub,540,388,36,600,'#D9D4F5',880);
+  x.restore();
+  // center image crossfade
+  const prev=S[k-1];const fa=ease((t-st)/0.5);
+  if(prev&&fa<1)drawImg(IM[prev.img],t,1);
+  drawImg(IM[sc.img],t,fa);
+  x.beginPath();x.arc(CX,CY0,238,0,7);x.lineWidth=5;x.strokeStyle='#FFD6EA';glow(PINK,24);x.stroke();x.shadowBlur=0;
+  // ring
+  x.beginPath();x.arc(CX,CY0,R,0,7);x.lineWidth=8;x.strokeStyle='rgba(139,132,181,.35)';x.stroke();
+  const done=sc.done; // steps completed before this scene
+  const cur=sc.step||0;
+  // completed arc
+  let endA=ang(done);
+  if(cur){endA=ang(cur-1)+ease(cl((t-st)/Math.min(en-st,6)))*Math.PI/4}
+  if(done>0||cur){x.beginPath();x.arc(CX,CY0,R,ang(0),endA);x.lineWidth=10;x.strokeStyle=CY;glow(CY,22);x.stroke();x.shadowBlur=0}
+  // spinning in chorus
+  if(sc.spin){const a=t*2.2;for(let j=0;j<3;j++){const aa=a+j*2.094;x.beginPath();x.arc(CX,CY0,R,aa,aa+0.7);x.lineWidth=10;x.strokeStyle=j%2?PINK:CY;glow(j%2?PINK:CY,24);x.stroke();x.shadowBlur=0}}
+  // traveling dot
+  if(cur){const px=CX+R*Math.cos(endA),py=CY0+R*Math.sin(endA);x.beginPath();x.arc(px,py,13,0,7);x.fillStyle=WH;glow(CY,30);x.fill();x.shadowBlur=0}
+  // nodes
+  for(let i=0;i<8;i++){
+    const a=ang(i),nx=CX+R*Math.cos(a),ny=CY0+R*Math.sin(a);
+    const prodIdx=cur?cur%8:-1, subIdx=cur?cur-1:-1;
+    const isProd=i===prodIdx&&p>0.35, isSub=i===subIdx;
+    const reached=i<=done||(cur&&i<=cur-1)||(done>=8);
+    let col=reached?CY:DIM,r=NR;
+    if(isSub){col=PINK}
+    if(isProd){col=GOLD;r=NR+6+4*Math.sin(t*6)}
+    x.beginPath();x.arc(nx,ny,r,0,7);x.fillStyle='#120D33';x.fill();x.lineWidth=5;x.strokeStyle=col;glow(col,(isProd||isSub)?30:10);x.stroke();x.shadowBlur=0;
+    fit(N[i][0],nx,ny-12,30,900,WH,r*1.7);txt(N[i][1],nx,ny+22,24,800,col);
+  }
+  // acetyl-CoA entering in step 1
+  if(cur===1){const q=ease(cl((t-st)/3));const sx=150+q*150,sy=470+q*40;x.save();x.globalAlpha=cl((t-st)/0.4);
+    rr(sx-112,sy-36,224,72,36);x.fillStyle='#120D33';x.fill();x.lineWidth=4;x.strokeStyle=GOLD;glow(GOLD,20);x.stroke();x.shadowBlur=0;
+    txt('Acetyl-CoA 2C',sx,sy,26,900,WH);x.restore()}
+  // output pops
+  for(const e of EV){const d=t-e.t;if(d>=0&&d<2.6){const a=ang(e.step-1)+Math.PI/8;const bx=CX+(R+0)*Math.cos(a),by=CY0+R*Math.sin(a);
+      const q=ease(d/0.5),al=d>2?1-(d-2)/0.6:1;const ox=bx+Math.cos(a)*q*40,oy=by+Math.sin(a)*q*40-d*14;
+      x.save();x.globalAlpha=cl(al);const col=e.k==='CO₂'?'#C9D2E3':GOLD;x.font='900 40px M';const w=x.measureText('+ '+e.k).width+44;
+      const px=cl(ox,w/2+20,W-w/2-20);
+      rr(px-w/2,oy-36,w,72,36);x.fillStyle=col;glow(col,30);x.fill();x.shadowBlur=0;txt('+ '+e.k,px,oy+2,40,900,'#0B0820');x.restore()}}
+  // tally
+  const T0=[['NADH',3],['FADH₂',1],['GTP',1],['CO₂',2]];
+  T0.forEach((it,i)=>{const n=EV.filter(e=>e.k===it[0]&&t>=e.t).length;const bx=92+i*232,by=1292;const full=n>=it[1];
+    rr(bx,by,200,96,22);x.fillStyle='rgba(11,8,32,.7)';x.fill();x.lineWidth=3;x.strokeStyle=full?GOLD:'rgba(139,132,181,.6)';if(full)glow(GOLD,16);x.stroke();x.shadowBlur=0;
+    txt(it[0],bx+100,by+30,28,800,full?GOLD:'#D9D4F5');txt(n+' / '+it[1],bx+100,by+68,34,900,WH)});
+  // lyrics
+  let li=-1;for(let i=0;i<L.length;i++)if(t>=L[i].t-0.15)li=i;
+  if(li>=0&&t<CFG.lyrEnd){const ln=L[li],d=t-(ln.t-0.15),a=ease(d/0.22);const ls=wrap(ln.s,960,58,900);
+    x.save();x.globalAlpha=a;ls.forEach((s,j)=>{const y=1470+j*76-(ls.length-1)*10+(1-a)*14;x.font='900 58px M';x.textAlign='center';x.textBaseline='middle';x.lineWidth=10;x.strokeStyle='#0B0820';x.strokeText(s,540,y);x.fillStyle=WH;glow(PINK,18);x.fillText(s,540,y);x.shadowBlur=0});x.restore()}
+  // hook
+  if(t<3.2){const a=t<2.7?1:1-(t-2.7)/0.5;x.save();x.globalAlpha=a;rr(120,1600,840,96,48);x.fillStyle=PINK;glow(PINK,30);x.fill();x.shadowBlur=0;txt('LEARN IT IN ONE SONG',540,1650,44,900,WH);x.restore()}
+  // end card
+  if(t>CFG.lyrEnd){const a=ease((t-CFG.lyrEnd)/0.5);x.save();x.globalAlpha=a;txt('Send this to your study group',540,1480,50,900,WH,'center',PINK);txt('Follow for more science songs',540,1560,40,800,CY);x.restore()}
+  if(t>3.2){x.font='44px YT';x.textAlign='center';x.fillStyle='rgba(255,227,241,.75)';x.fillText('Sung For You',540,1690)}
+  // fade out
+  if(t>CFG.T-0.8){x.fillStyle=`rgba(11,8,32,${cl((t-(CFG.T-0.8))/0.8)})`;x.fillRect(0,0,W,H)}
+}
+draw(0);
+</script>
