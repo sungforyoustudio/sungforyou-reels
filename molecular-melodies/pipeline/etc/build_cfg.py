@@ -1,0 +1,115 @@
+"""build cfg.js for the two ETC songs from ASR-anchored line tables"""
+import json,re,sys
+# id, text(html), t0, t1   (mp3 seconds, from Parakeet word starts)
+V1=[
+('L01','Inner membrane of the mitochondria',2.24,4.6),
+('L02',"Electrons on the move, here's the idea",6.8,9.9),
+('L03','Complex 1 takes electrons from NADH',11.2,15.5),
+('L04','Pumps four protons out across the gate',15.6,20.4),
+('L05','Complex 2 takes them from FADH<sub>2</sub>',20.64,24.6),
+('L06','No protons pumped,',25.28,26.9),
+('L06','but the electrons go through',26.96,29.2),
+('L07','Coenzyme Q, ubiquinone',30.0,32.6),
+('L08','The shuttle in the middle',33.2,35.0),
+('L09','Carries them to Complex 3,',35.12,37.7),
+('L09','that\'s the riddle',38.56,40.0),
+('L10','Pass it down, pass it down',40.0,42.5),
+('L11','The electron chain',42.72,44.6),
+('L12','Pump the protons out',44.72,46.9),
+('L13','Build the gradient, gain',47.12,49.4),
+('L14','Oxygen waits at the end of the line',49.6,53.8),
+('L15','Makes water',54.4,55.7),
+('L16','And the ATP is mine',55.84,58.2),
+('L17','Complex 3, cytochrome bc<sub>1</sub>',59.2,61.8),
+('L18','Pumps four more protons, then it\'s done',61.84,64.1),
+('L19','Cytochrome c carries one at a time',64.16,66.7),
+('L20','Over to Complex 4, end of the line',66.72,68.9),
+('L21','Complex 4, cytochrome c oxidase',69.04,71.3),
+('L22','Pumps two protons,',71.36,72.05),
+('L22','hands electrons to oxygen with grace',72.08,74.0),
+('L23','Oxygen plus protons, water is made',74.0,76.2),
+('L24','That\'s why you breathe, that\'s the trade',76.24,78.6),
+('L25','Now the protons are crowded,',78.64,80.3),
+('L25','they want back in',80.4,81.3),
+('L26','Back in, back in, back in',81.44,83.3),
+('L27','Through ATP synthase, watch it spin',83.44,86.5),
+('L28','A tiny turbine',88.16,89.3),
+('L29','ADP plus phosphate',89.44,90.95),
+('L30','ATP comes out, don\'t be late',91.12,93.2),
+('L31','Chemiosmosis, that\'s the name',93.28,95.4),
+('L32','Proton gradient powers the game',95.6,98.3),
+('L33','Pass it down, pass it down',99.92,102.4),
+('L34','The electron chain',102.64,104.5),
+('L35','Pump the protons out',104.64,106.5),
+('L36','Build the gradient, gain',106.56,109.0),
+('L37','Oxygen waits at the end of the line',109.84,113.7),
+('L38','Makes water',114.3,115.6),
+('L39','And the ATP is mine',115.84,118.2),
+('L40','1, 2, Q, 3, C, 4,',119.76,122.7),
+('L41','then the synthase',122.8,123.9),
+('L42','That\'s the electron transport chain,',124.08,127.3),
+('L42','that\'s the pace',127.52,128.5),
+]
+V2=[
+('L01','Inner membrane of the mitochondria',2.8,5.8),
+('L02',"Electrons on the move, here's the idea",6.96,11.2),
+('L03','Complex 1 takes electrons from NADH',11.76,15.6),
+('L04','Pumps four protons out across the gate',16.0,19.95),
+('L05','Complex 2 takes them from FADH<sub>2</sub>',20.64,24.4),
+('L06','No protons pumped,',24.56,26.2),
+('L06','but the electrons go through',26.32,28.7),
+('L07','Coenzyme Q, ubiquinone',28.88,31.2),
+('L08','The shuttle in the middle',31.3,33.4),
+('L09','Carries them to Complex 3,',33.6,35.95),
+('L09','that\'s the riddle',36.24,37.4),
+('L10','Pass it down, pass it down',37.52,39.7),
+('L11','The electron chain',39.76,41.6),
+('L12','Pump the protons out',41.84,43.9),
+('L13','Build the gradient, gain',44.0,46.4),
+('L14','Oxygen waits at the end of the line',46.8,50.6),
+('L15','Makes water',50.72,52.2),
+('L16','And the ATP is mine',52.96,56.2),
+('L17','Complex 3, cytochrome bc<sub>1</sub>',59.36,63.2),
+('L18','Pumps four more protons, then it\'s done',63.68,67.8),
+('L19','Cytochrome c carries one at a time',68.0,72.2),
+('L20','Over to Complex 4, end of the line',72.48,76.6),
+('L21','Complex 4, cytochrome c oxidase',76.88,80.7),
+('L22','Pumps two protons,',81.12,82.2),
+('L22','hands electrons to oxygen with grace',82.32,85.4),
+('L23','Oxygen plus protons, water is made',85.6,89.8),
+('L24','That\'s why you breathe, that\'s the trade',91.76,94.4),
+('L25','Now the protons are crowded,',94.32,96.5),
+('L25','they want back in',96.72,98.4),
+('L27','Through ATP synthase, watch it spin',98.48,102.8),
+('L28','A tiny turbine',102.72,104.45),
+('L29','ADP plus phosphate',104.56,106.9),
+('L30','ATP comes out, don\'t be late',107.28,111.1),
+('L31','Chemiosmosis, that\'s the name',111.92,114.1),
+('L32','Proton gradient powers the game',114.16,116.0),
+('L33','Pass it down, pass it down',116.0,118.0),
+('L34','The electron chain',118.08,119.95),
+('L35','Pump the protons out',120.16,122.1),
+('L36','Build the gradient, gain',122.3,124.1),
+('L37','Oxygen waits at the end of the line',125.04,128.7),
+('L38','Makes water',128.88,131.0),
+('L39','And the ATP is mine',131.04,134.0),
+('L40','1, 2, Q, 3, C, 4,',134.2,136.1),
+('L41','then the synthase',136.24,137.5),
+('L42','That\'s the electron transport chain,',138.24,140.6),
+('L42','that\'s the pace',140.72,141.8),
+]
+def wts(w):
+    t=re.sub(r'<[^>]+>','',w); t=re.sub(r'[^A-Za-z0-9]','',t); return max(1,len(t)/3.2)
+def build(lines,T,out):
+    L=[];cues={}
+    for i,(k,txt,a,b) in enumerate(lines):
+        toks=txt.split(); ws=[wts(t) for t in toks]; tot=sum(ws); cur=a; words=[]
+        for t,w in zip(toks,ws):
+            d=(b-a)*w/tot; words.append([t,round(cur,3),round(cur+d,3)]); cur+=d
+        L.append(dict(k=k,text=re.sub(r'<[^>]+>','',txt),words=words))
+        cues.setdefault(k,round(a-0.1,3))
+    cfg=dict(T=T,lines=L,cues=cues)
+    open(out,'w').write('const CFG='+json.dumps(cfg)+';'); print(out,T,len(L),'lines',len(cues),'cues')
+build(V1,131.5,'/home/claude/reels/etc/v1/cfg.js') if __import__('os').makedirs('/home/claude/reels/etc/v1',exist_ok=True) is None else 0
+__import__('os').makedirs('/home/claude/reels/etc/v2',exist_ok=True)
+build(V2,144.6,'/home/claude/reels/etc/v2/cfg.js')
