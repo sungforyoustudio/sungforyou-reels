@@ -1,0 +1,57 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+html,body{margin:0;background:#06141A}
+.c{position:relative;overflow:hidden;font-family:Montserrat,Poppins,sans-serif;color:#fff;background:radial-gradient(ellipse at 50% 35%,#0E3B4A 0%,#082230 45%,#04121A 100%)}
+.P{width:1080px;height:1920px}.L{width:1920px;height:1080px}
+.hex{position:absolute;opacity:.10}
+.tbl{position:absolute}
+.cell{position:absolute;display:flex;align-items:center;justify-content:center;font-weight:800;border-radius:6px}
+.alk{background:#FF7A8A;color:#3a0610}.ae{background:#FFB86B;color:#3a2000}.tm{background:#7DD3FC;color:#042030}.hal{background:#4ADE80;color:#032a12}.nob{background:#C4A8FF;color:#1b0a45}.nm{background:#2DD4BF;color:#032a25}.pt,.inner,.md{background:#5F8089;color:#06141A;opacity:.75}.mt{background:#2f93c4;color:#042030}.md{background:#F5C84B;color:#2a1c00;box-shadow:0 0 22px #F5C84Bcc}.nm{background:#4ADE80;color:#032a12}.in{background:#7C6CFF;color:#10063a}
+.dim{opacity:.55}
+.kick{font-weight:800;letter-spacing:.12em;color:#7DD3FC}
+.big{font-weight:900;line-height:.95;text-shadow:0 6px 30px rgba(0,0,0,.6)}
+.g{color:#4ADE80}.y{color:#F5C84B}.b{color:#7DD3FC}
+.pill{display:inline-block;font-weight:800;border-radius:999px;padding:.35em .9em;margin-right:14px}
+.brand{position:absolute;display:flex;align-items:center;font-weight:800;letter-spacing:.04em}
+</style></head><body>
+<div id="root" class="c"></div>
+<script src="cfg.js"></script><script>
+const SYM="H He Li Be B C N O F Ne Na Mg Al Si P S Cl Ar K Ca Sc Ti V Cr Mn Fe Co Ni Cu Zn Ga Ge As Se Br Kr Rb Sr Y Zr Nb Mo Tc Ru Rh Pd Ag Cd In Sn Sb Te I Xe Cs Ba La Ce Pr Nd Pm Sm Eu Gd Tb Dy Ho Er Tm Yb Lu Hf Ta W Re Os Ir Pt Au Hg Tl Pb Bi Po At Rn Fr Ra Ac Th Pa U Np Pu Am Cm Bk Cf Es Fm Md No Lr Rf Db Sg Bh Hs Mt Ds Rg Cn Nh Fl Mc Lv Ts Og".split(' ');
+function pos(z){ // [row(0-based), col(0-based), f]
+ if(z==1)return[0,0];if(z==2)return[0,17];
+ if(z<=4)return[1,z-3];if(z<=10)return[1,12+(z-5)];
+ if(z<=12)return[2,z-11];if(z<=18)return[2,12+(z-13)];
+ if(z<=36)return[3,z-19];if(z<=54)return[4,z-37];
+ if(z<=56)return[5,z-55];if(z<=70)return[7.4,2+(z-57)];if(z==71)return[5,2];if(z<=86)return[5,3+(z-72)];
+ if(z<=88)return[6,z-87];if(z<=102)return[8.4,2+(z-89)];if(z==103)return[6,2];return[6,3+(z-104)];}
+const ALK=[3,11,19,37,55,87],AE=[4,12,20,38,56,88],HAL=[9,17,35,53,85,117],NOB=[2,10,18,36,54,86,118],NM=[1,6,7,8,15,16,34],MD=[5,14,32,33,51,52];
+function fam(z){if(ALK.includes(z))return'alk';if(AE.includes(z))return'ae';if(HAL.includes(z))return'hal';if(NOB.includes(z))return'nob';if(NM.includes(z))return'nm';if(MD.includes(z))return'md';
+ if((z>=57&&z<=70)||(z>=89&&z<=102))return'inner';if((z>=21&&z<=30)||(z>=39&&z<=48)||z==71||(z>=72&&z<=80)||z==103||(z>=104&&z<=112))return'tm';return'pt';}
+const COL={alk:'#FF7A8A',ae:'#FFB86B',tm:'#7DD3FC',hal:'#4ADE80',nob:'#C4A8FF',nm:'#2DD4BF',md:'#7C9CA6',pt:'#5F8089',inner:'#4B6A73'};
+const NMs=[1,2,6,7,8,9,10,15,16,17,18,34,35,36,53,54,85,86,117,118],MDs=[5,14,32,33,51,52];
+function cls(z){return fam(z);}function cls_old(z){if(MDs.includes(z))return'md';if(NMs.includes(z))return'nm';if((z>=57&&z<=71)||(z>=89&&z<=103))return'in';return'mt';}
+const P=new URLSearchParams(location.search).get('o')==='L'?false:true;
+const root=document.getElementById('root');root.classList.add(P?'P':'L');
+const mark='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="100%" height="100%">'+CFG.mark+'</svg>';
+function table(x,y,cw,ch,fs){let h='<div class="tbl" style="left:'+x+'px;top:'+y+'px">';
+ for(let z=1;z<=118;z++){const[r,c]=pos(z);const k=cls(z);h+='<div class="cell '+k+''+'" style="left:'+(c*cw)+'px;top:'+(r*ch)+'px;width:'+(cw-4)+'px;height:'+(ch-4)+'px;font-size:'+fs+'px">'+SYM[z-1]+'</div>';}
+ return h+'</div>';}
+function hexes(n){let h='';for(let i=0;i<n;i++){const s=120+((i*97)%260),x=((i*313)%100),y=((i*191)%100);h+='<svg class="hex" style="left:'+x+'%;top:'+y+'%;width:'+s+'px;height:'+s+'px" viewBox="0 0 100 100"><polygon points="50,3 93,27 93,73 50,97 7,73 7,27" fill="none" stroke="#4ADE80" stroke-width="2"/></svg>';}return h;}
+if(P){
+ root.innerHTML=hexes(14)+
+ '<div class="brand" style="left:0;right:0;top:250px;justify-content:center;font-size:40px"><div style="width:74px;height:74px;margin-right:18px">'+mark+'</div>MOLECULAR MELODIES</div>'+
+ '<div class="kick" style="position:absolute;left:0;right:0;top:400px;text-align:center;font-size:46px">PERIODIC TABLE SONG &middot; PART 1</div>'+
+ '<div class="big" style="position:absolute;left:0;right:0;top:470px;text-align:center;font-size:190px"><span class="y">FAMILIES</span><br>&amp;<br>GROUPS</div>'+
+ table(81,1010,51,54,24)+
+ '<div style="position:absolute;left:0;right:0;top:1565px;text-align:center;font-size:36px;font-weight:800"><span class="pill" style="background:#FF7A8A;color:#10161a">ALKALI METALS</span><span class="pill" style="background:#4ADE80;color:#10161a">HALOGENS</span><span class="pill" style="background:#C4A8FF;color:#10161a">NOBLE GASES</span></div>'+
+ '<div style="position:absolute;left:0;right:0;top:1660px;text-align:center;font-size:36px;font-weight:700;color:#cfe8ee">Same column, same behavior</div>';
+}else{
+ root.innerHTML=hexes(12)+
+ '<div class="brand" style="left:80px;top:60px;font-size:34px"><div style="width:64px;height:64px;margin-right:16px">'+mark+'</div>MOLECULAR MELODIES</div>'+
+ '<div class="kick" style="position:absolute;left:80px;top:200px;font-size:40px">PERIODIC TABLE SONG &middot; PART 1</div>'+
+ '<div class="big" style="position:absolute;left:80px;top:270px;font-size:150px"><span class="y">FAMILIES</span><br>&amp; GROUPS</div>'+
+ '<div style="position:absolute;left:80px;top:640px;font-size:30px;font-weight:800"><span class="pill" style="background:#FF7A8A;color:#10161a">ALKALI METALS</span><span class="pill" style="background:#4ADE80;color:#10161a">HALOGENS</span><span class="pill" style="background:#C4A8FF;color:#10161a">NOBLE GASES</span></div>'+
+ '<div style="position:absolute;left:80px;top:750px;font-size:44px;font-weight:700;color:#cfe8ee">Same column, same behavior</div>'+
+ '<div style="position:absolute;left:80px;top:830px;font-size:40px;font-weight:800;color:#4ADE80">Sing it. Learn it. Ace it.</div>'+
+ table(1035,260,47,54,21);
+}
+</script></body></html>
