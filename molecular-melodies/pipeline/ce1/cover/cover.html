@@ -1,0 +1,58 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+html,body{margin:0;background:#06141A}
+.c{position:relative;overflow:hidden;font-family:Montserrat,Poppins,sans-serif;color:#fff;background:radial-gradient(ellipse at 50% 30%,#0E3B4A 0%,#082230 45%,#04121A 100%)}
+.P{width:1080px;height:1920px}.L{width:1920px;height:1080px}
+.abs{position:absolute}
+.brand{display:flex;align-items:center;font-weight:900;letter-spacing:.04em;color:#EFFFFA}
+.kick{font-weight:800;letter-spacing:.14em;color:#7DD3FC}
+.big{font-weight:900;line-height:.92;text-shadow:0 8px 34px rgba(0,0,0,.65)}
+.g{color:#4ADE80}.y{color:#F5C84B}.b{color:#7DD3FC}.pk{color:#F472B6}.pu{color:#C4A8FF}
+.pill{display:inline-block;font-weight:800;border-radius:999px;padding:.35em .9em;border:3px solid;background:rgba(6,20,26,.7)}
+.circ{display:flex;align-items:center;justify-content:center;border-radius:50%;font-weight:900;color:#06141A}
+.lab{font-weight:800;text-align:center;letter-spacing:.04em}
+</style></head><body>
+<div id="root" class="c"></div>
+<script src="cfg.js"></script><script>
+const P=new URLSearchParams(location.search).get('o')==='L'?false:true;
+const root=document.getElementById('root');root.classList.add(P?'P':'L');
+const mark='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="100%" height="100%">'+CFG.mark+'</svg>';
+const B='#7DD3FC',K='#F472B6';
+function X(x,y,L,col,rot=0){return `<g transform="translate(${x} ${y}) rotate(${rot})"><path d="M-9 ${-L}L9 ${L}M9 ${-L}L-9 ${L}" stroke="${col}" stroke-width="11" stroke-linecap="round" fill="none"/><circle r="6" fill="#EFFFFA"/></g>`;}
+function rod(x,y,L,col,d){const l=d*10;return `<path d="M${x-l} ${y-L}Q${x+l*1.6} ${y} ${x-l} ${y+L}" stroke="${col}" stroke-width="10" stroke-linecap="round" fill="none"/>`;}
+
+function XX(x,y,L,col,tip,rot=0,tc){const t=tip?`<path d="M${-9} ${-L}L${-9+18*0.36} ${-L+2*L*0.36}" stroke="${tc}" stroke-width="11" stroke-linecap="round" fill="none"/>`:'';return `<g transform="translate(${x} ${y}) rotate(${rot})"><path d="M-9 ${-L}L9 ${L}M9 ${-L}L-9 ${L}" stroke="${col}" stroke-width="11" stroke-linecap="round" fill="none"/>${t}<circle r="6" fill="#EFFFFA"/></g>`;}
+function rr(x,y,L,col,tip,tc){return `<path d="M${x} ${y-L}Q${x+11} ${y} ${x} ${y+L}" stroke="${col}" stroke-width="10" stroke-linecap="round" fill="none"/>`+(tip?`<path d="M${x} ${y-L}L${x+4} ${y-L*0.3}" stroke="${tc}" stroke-width="10" stroke-linecap="round" fill="none"/>`:'');}
+function cellSvg(kind,s){
+ const cell=(cx,rx,ry,cy=150)=>`<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="rgba(45,212,191,.16)" stroke="#2DD4BF" stroke-width="7"/>`;
+ let g='';
+ if(kind==='P'){g=cell(150,130,112)+`<ellipse cx="150" cy="150" rx="104" ry="96" fill="none"/>`+XX(122,96,40,B,0,0,K)+XX(160,96,40,K,0,0,B)+`<circle cx="141" cy="68" r="22" fill="none" stroke="#F5C84B" stroke-width="5"/>`+XX(130,206,26,B,1,0,K)+XX(170,206,26,K,1,0,B);}
+ if(kind==='M'){g=cell(150,130,112)+`<line x1="150" y1="36" x2="150" y2="264" stroke="#F5C84B" stroke-width="3" stroke-dasharray="8 7"/>`+XX(134,96,38,B,1,0,K)+XX(166,96,38,K,1,0,B)+XX(136,206,26,B,1,0,K)+XX(164,206,26,K,1,0,B)+`<circle cx="26" cy="150" r="9" fill="#F5C84B"/><circle cx="274" cy="150" r="9" fill="#F5C84B"/>`;}
+ if(kind==='A'){g=cell(150,140,104)+`<g stroke="rgba(239,255,250,.4)" stroke-width="2.5"><line x1="12" y1="150" x2="78" y2="100"/><line x1="12" y1="150" x2="78" y2="206"/><line x1="288" y1="150" x2="222" y2="100"/><line x1="288" y1="150" x2="222" y2="206"/></g>`+XX(78,100,38,B,1,0,K)+XX(78,206,26,K,1,0,B)+XX(222,100,38,K,1,0,B)+XX(222,206,26,B,1,0,K)+`<circle cx="12" cy="150" r="9" fill="#F5C84B"/><circle cx="288" cy="150" r="9" fill="#F5C84B"/>`;}
+ if(kind==='F'){const c=(x,y)=>`<ellipse cx="${x}" cy="${y}" rx="64" ry="48" fill="rgba(45,212,191,.16)" stroke="#2DD4BF" stroke-width="6"/>`;
+  g=c(80,90)+c(220,90)+c(80,214)+c(220,214)+rr(66,90,24,B)+rr(94,90,16,K,1,B)+rr(206,90,24,B,1,K)+rr(234,90,16,K)+rr(66,214,24,K,1,B)+rr(94,214,16,B)+rr(206,214,24,K)+rr(234,214,16,B,1,K);}
+ return `<svg viewBox="0 0 300 300" width="${s}" height="${s}">${g}</svg>`;}
+
+function sun(s){let r='';for(let i=0;i<12;i++){const a=i*Math.PI/6;r+=`<line x1="${150+Math.cos(a)*66}" y1="${150+Math.sin(a)*66}" x2="${150+Math.cos(a)*92}" y2="${150+Math.sin(a)*92}" stroke="#F5C84B" stroke-width="9" stroke-linecap="round"/>`;}return `<svg viewBox="0 0 300 300" width="${s}" height="${s}">${r}<circle cx="150" cy="150" r="48" fill="#F5C84B"/></svg>`;}
+function chl(w){const st=(x,y)=>[0,1,2,3].map(i=>`<rect x="${x}" y="${y+i*13}" width="62" height="10" rx="5" fill="rgba(45,212,191,.85)" stroke="#2DD4BF" stroke-width="2"/>`).join('');
+ return `<svg viewBox="0 0 400 260" width="${w}" height="${w*0.65}"><ellipse cx="200" cy="130" rx="188" ry="120" fill="rgba(74,222,128,.12)" stroke="#4ADE80" stroke-width="8"/>${st(110,60)}${st(228,48)}${st(170,140)}${st(260,130)}${st(80,130)}</svg>`;}
+function chip(t,c,fs){return `<span class="pill" style="font-size:${fs}px;border-color:${c};color:${c};margin:8px">${t}</span>`;}
+let h='';
+if(P){
+ h+=`<div class="abs brand" style="left:140px;top:104px;font-size:44px"><div style="width:90px;height:90px;margin-right:18px">${mark}</div>MOLECULAR MELODIES</div>`;
+ h+=`<div class="abs kick" style="left:0;width:1080px;text-align:center;top:292px;font-size:36px">CELLULAR ENERGY &middot; PART 1</div>`;
+ h+=`<div class="abs big g" style="left:0;width:1080px;text-align:center;top:350px;font-size:142px">PHOTO-<br>SYNTHESIS</div>`;
+ h+=`<div class="abs" style="left:0;width:1080px;text-align:center;top:640px;font-size:48px;line-height:1.12;font-weight:900;color:#EFFFFA;text-shadow:0 4px 20px rgba(0,0,0,.6)">How a leaf makes <span class="y">sugar</span><br>from air</div>`;
+ h+=`<div class="abs" style="left:60px;top:830px">${sun(250)}</div><div class="abs" style="left:300px;top:790px">${chl(720)}</div>`;
+ h+=`<div class="abs" style="left:0;width:1080px;text-align:center;top:1310px;font-size:46px;font-weight:900">${chip('CO\u2082','#9FB6BC',46)}${chip('H\u2082O','#7DD3FC',46)}<span style="color:#EFFFFA">\u2192</span>${chip('sugar','#4ADE80',46)}${chip('O\u2082','#F472B6',46)}</div>`;
+ h+=`<div class="abs" style="left:0;width:1080px;text-align:center;top:1640px"><span class="pill g" style="font-size:40px;border-color:#4ADE80">Light + Calvin cycle</span> <span class="pill y" style="font-size:40px;border-color:#F5C84B;margin-left:14px">2.5-minute song</span></div>`;
+}else{
+ h+=`<div class="abs brand" style="left:70px;top:56px;font-size:36px"><div style="width:76px;height:76px;margin-right:16px">${mark}</div>MOLECULAR MELODIES</div>`;
+ h+=`<div class="abs kick" style="left:74px;top:210px;font-size:34px">CELLULAR ENERGY &middot; PART 1</div>`;
+ h+=`<div class="abs big g" style="left:66px;top:262px;font-size:128px">PHOTO-<br>SYNTHESIS</div>`;
+ h+=`<div class="abs" style="left:74px;top:560px;font-size:54px;font-weight:900;color:#EFFFFA;line-height:1.15;text-shadow:0 4px 20px rgba(0,0,0,.6)">How a leaf makes <span class="y">sugar</span><br>from air</div>`;
+ h+=`<div class="abs" style="left:74px;top:790px"><span class="pill g" style="font-size:44px;border-color:#4ADE80">Light + Calvin cycle</span> <span class="pill y" style="font-size:44px;border-color:#F5C84B;margin-left:12px">2.5-minute song</span></div>`;
+ h+=`<div class="abs" style="left:1000px;top:90px">${sun(260)}</div><div class="abs" style="left:1000px;top:330px">${chl(800)}</div>`;
+ h+=`<div class="abs" style="left:980px;top:880px;font-size:44px;font-weight:900;width:880px;text-align:center">${chip('CO\u2082','#9FB6BC',44)}${chip('H\u2082O','#7DD3FC',44)}<span style="color:#EFFFFA">\u2192</span>${chip('sugar','#4ADE80',44)}${chip('O\u2082','#F472B6',44)}</div>`;
+}
+root.innerHTML=h;
+</script></body></html>
